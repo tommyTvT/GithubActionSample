@@ -1,0 +1,51 @@
+name: Export Docker Image
+
+# 设置环境变量，方便后续维护和修改
+env:
+  IMAGE_NAME: dannicool/docker-wechatbot-webhook
+  TAR_FILENAME: wechatbot.tar
+
+# 定义触发条件：允许手动触发此工作流
+on:
+  workflow_dispatch: # 这使你可以直接在 GitHub 的 Actions 标签页手动运行此工作流
+
+jobs:
+  export-image:
+    name: Pull and Export Docker Image
+    runs-on: ubuntu-latest # 使用 GitHub 托管的最新 Ubuntu 运行器
+
+    steps:
+      # 步骤1：检出仓库代码（虽然本例可能不需要代码，但这是一个好习惯，并且可以为后续保存文件提供路径）
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 步骤2：设置 Docker 环境（使用 Buildx 以获得更好的构建特性，虽然本例主要是拉取和保存）
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 步骤3：从 Docker Hub 拉取指定的镜像
+      - name: Pull Docker image
+        run: |
+          docker pull $IMAGE_NAME
+
+      # 步骤4：使用 docker save 命令将镜像导出为 .tar 文件
+      - name: Save Docker image to tar file
+        run: |
+          docker save -o $TAR_FILENAME $IMAGE_NAME
+          echo "镜像已成功导出为：$(pwd)/$TAR_FILENAME"
+          ls -lh $TAR_FILENAME # 列出文件信息，便于在日志中确认
+
+      # 步骤5：将导出的 .tar 文件上传为工作流制品（Artifact），供后续下载
+      - name: Upload Docker image tar file as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: exported-docker-image # 制品的名称
+          path: wechatbot.tar # 要上传的文件路径，与上面 env 中定义的 TAR_FILENAME 对应
+          # 保留期（天），默认为90天，可根据需要调整
+          retention-days: 7
+
+      # （可选）步骤6：输出成功信息
+      - name: Success Notification
+        run: |
+          echo "✅ Docker 镜像 '$IMAGE_NAME' 已成功拉取并导出为 '$TAR_FILENAME'。"
+          echo "📦 请在上方的 'Artifacts' 区域下载文件 'exported-docker-image'。"
