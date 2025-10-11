@@ -1,4 +1,4 @@
-name: Export Docker Image
+name: 拉取镜像docker
 
 # 设置环境变量，方便后续维护和修改
 env:
@@ -12,7 +12,7 @@ on:
 jobs:
   export-image:
     name: Pull and Export Docker Image
-    runs-on: ubuntu-latest # 使用 GitHub 托管的最新 Ubuntu 运行器
+    runs-on: ubuntu-latest-arm # 使用 GitHub 托管的最新 Ubuntu 运行器
 
     steps:
       # 步骤1：检出仓库代码（虽然本例可能不需要代码，但这是一个好习惯，并且可以为后续保存文件提供路径）
